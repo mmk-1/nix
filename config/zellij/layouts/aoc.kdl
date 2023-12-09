@@ -1,0 +1,17 @@
+layout {
+    pane size=1 borderless=true {
+        plugin location="zellij:tab-bar"
+    }
+    pane split_direction="vertical" {
+        pane size="25%" {
+            cwd "$HOME/work/aoc"
+        }
+        pane size="75%" {
+            cwd "$HOME/work/aoc"
+        }
+    }
+    pane size=1 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}
+
