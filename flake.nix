@@ -8,22 +8,81 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Applying the configuration happens from the .dotfiles directory so the
+    # relative path is defined accordingly. This has potential of causing issues.
+    vim-plugins = {
+      url = "path:./config/nvim/plugins";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, vim-plugins, home-manager, ... }:
     let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      # system = "x86_64-linux";
+      # pkgs = nixpkgs.legacyPackages.${system};
+      home-common = { pkgs, lib, ... }:
+        {
+          home.username = "mmk";
+          home.homeDirectory = "/home/mmk";
+
+          nixpkgs.overlays = [
+            vim-plugins.overlay
+          ];
+
+          # Let Home Manager install and manage itself.
+          programs.home-manager.enable = true;
+          home.stateVersion = "23.11";
+
+          imports = [
+            ./config/nvim
+          ];
+        };
     in {
-      homeConfigurations."mmk" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+      # homeConfigurations."mmk" = home-manager.lib.homeManagerConfiguration {
+      #   inherit pkgs;
+      # };
 
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [ ./home.nix ];
+       homeConfigurations = {
+        mmk = 
+          let 
+            system = "x86_64-linux";
+            pkgs = nixpkgs.legacyPackages.${system};
+          in 
+          home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            modules = [
+              home-common
+              # home-linux
+            ];
+        };
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
+        # nixos =
+        #   let
+        #     system = "x86_64-linux";
+        #     pkgs = nixpkgs.legacyPackages.${system};
+        #   in
+        #   home-manager.lib.homeManagerConfiguration {
+        #     inherit pkgs;
+        #     modules = [
+        #       home-common
+        #       home-linux
+        #     ];
+        #   };
+
+        # macbook-pro =
+        #   let
+        #     system = "x86_64-darwin";
+        #     pkgs = nixpkgs.legacyPackages.${system};
+        #   in
+        #   home-manager.lib.homeManagerConfiguration {
+        #     inherit pkgs;
+        #     modules = [
+        #       home-common
+        #       home-macbook
+        #     ];
+        #   };
       };
+      
     };
 }
